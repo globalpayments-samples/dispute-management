@@ -1,0 +1,7 @@
+{
+  "title": "Global Payments Node.js — Dispute Management",
+  "description": "Dispute management sample using the Global Payments GP-API Node.js SDK",
+  "iconUrl": "https://globalpayments-samples.github.io/assets/img/g-symbol-dev-brand.png",
+  "tags": ["global-payments", "disputes", "chargebacks", "nodejs"],
+  "published": false
+}
