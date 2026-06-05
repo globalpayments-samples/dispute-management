@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispute Management | Global Payments</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f6fa;
+      color: #1a1d23;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e2e6ea;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header img { height: 32px; }
+    header h1 { font-size: 18px; font-weight: 600; color: #1a1d23; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+    .filters {
+      background: #fff;
+      border: 1px solid #e2e6ea;
+      border-radius: 8px;
+      padding: 20px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-end;
+      margin-bottom: 24px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-group label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; }
+    .filter-group select,
+    .filter-group input[type="date"] {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1a1d23;
+      background: #fff;
+      min-width: 160px;
+    }
+    .btn {
+      padding: 9px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: #0064d2; color: #fff; }
+    .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-warning { background: #f59e0b; color: #fff; }
+    .btn-sm { padding: 5px 12px; font-size: 13px; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e2e6ea;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e2e6ea;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-header h2 { font-size: 16px; font-weight: 600; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: #f9fafb;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid #e2e6ea;
+    }
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f9fafb; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-review { background: #fef3c7; color: #92400e; }
+    .badge-merchant { background: #dbeafe; color: #1e40af; }
+    .badge-closed { background: #f3f4f6; color: #6b7280; }
+    .badge-chargeback { background: #fee2e2; color: #991b1b; }
+    .badge-retrieval        { background: #ede9fe; color: #5b21b6; }
+    .badge-second-cb        { background: #fecaca; color: #7f1d1d; }
+    .badge-pre-arb          { background: #e0e7ff; color: #3730a3; }
+    .badge-arbitration      { background: #ffedd5; color: #c2410c; }
+    .badge-pre-compliance   { background: #fef9c3; color: #854d0e; }
+    .badge-compliance       { background: #ecfccb; color: #365314; }
+    .badge-reversal         { background: #dcfce7; color: #166534; }
+    .badge-goodfaith        { background: #cffafe; color: #155e75; }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 16px 24px;
+      border-top: 1px solid #e2e6ea;
+    }
+    .pagination span { font-size: 14px; color: #6b7280; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 100;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 48px 16px;
+      overflow-y: auto;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e6ea;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 16px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7280; }
+    .modal-body { padding: 24px; }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e2e6ea;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .detail-item label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 4px; }
+    .detail-item span { font-size: 14px; color: #1a1d23; }
+
+    .challenge-form { display: none; margin-top: 20px; border-top: 1px solid #e2e6ea; padding-top: 20px; }
+    .challenge-form.open { display: block; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+    .form-group select,
+    .form-group input[type="file"] {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .state-empty, .state-loading, .state-error {
+      padding: 48px 24px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .state-error { color: #dc2626; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1a1d23;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity .25s;
+      max-width: 360px;
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { background: #059669; }
+    .toast.error { background: #dc2626; }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="https://globalpayments-samples.github.io/assets/img/global-payments-logo.svg" alt="Global Payments" onerror="this.style.display='none'" />
+  <h1>Dispute Management</h1>
+</header>
+
+<div class="container">
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="filterStatus">
+        <option value="">All Statuses</option>
+        <option value="UNDER_REVIEW">Under Review</option>
+        <option value="WITH_MERCHANT">With Merchant</option>
+        <option value="CLOSED">Closed</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Stage</label>
+      <select id="filterStage">
+        <option value="">All Stages</option>
+        <option value="RETRIEVAL">Retrieval</option>
+        <option value="CHARGEBACK">Chargeback</option>
+        <option value="SECOND_CHARGEBACK">Second Chargeback</option>
+        <option value="PRE_ARBITRATION">Pre-Arbitration</option>
+        <option value="ARBITRATION">Arbitration</option>
+        <option value="PRE_COMPLIANCE">Pre-Compliance</option>
+        <option value="COMPLIANCE">Compliance</option>
+        <option value="REVERSAL">Reversal</option>
+        <option value="GOOD_FAITH">Good Faith</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>From Date</label>
+      <input type="date" id="filterStartDate" />
+    </div>
+    <div class="filter-group">
+      <label>To Date</label>
+      <input type="date" id="filterEndDate" />
+    </div>
+    <button class="btn btn-primary" onclick="loadDisputes(1)">Search</button>
+    <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+  </div>
+
+  <!-- Disputes Table -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Disputes</h2>
+      <span id="totalCount" style="font-size:13px;color:#6b7280;"></span>
+    </div>
+    <div id="tableContainer">
+      <div class="state-loading">Loading disputes...</div>
+    </div>
+    <div class="pagination" id="pagination" style="display:none">
+      <button class="btn btn-secondary btn-sm" id="btnPrev" onclick="changePage(-1)">Previous</button>
+      <span id="pageInfo"></span>
+      <button class="btn btn-secondary btn-sm" id="btnNext" onclick="changePage(1)">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Dispute Detail</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <div class="state-loading">Loading...</div>
+    </div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const BACKEND = '';
+  let currentPage = 1;
+  let totalPages = 1;
+  let currentDisputeId = null;
+  const disputeCache = {};
+
+  function localDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function defaultDates() {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 90);
+    document.getElementById('filterStartDate').value = localDateStr(start);
+    document.getElementById('filterEndDate').value = localDateStr(end);
+    document.getElementById('filterEndDate').setAttribute('max', localDateStr(end));
+  }
+
+  function resetFilters() {
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterStage').value = '';
+    defaultDates();
+    loadDisputes(1);
+  }
+
+  function statusBadge(status) {
+    const map = { UNDER_REVIEW: 'badge-review', WITH_MERCHANT: 'badge-merchant', CLOSED: 'badge-closed' };
+    return `<span class="badge ${map[status] || ''}">${status || '-'}</span>`;
+  }
+
+  function stageBadge(stage) {
+    const map = {
+      CHARGEBACK: 'badge-chargeback', RETRIEVAL: 'badge-retrieval',
+      SECOND_CHARGEBACK: 'badge-second-cb',
+      PRE_ARBITRATION: 'badge-pre-arb', ARBITRATION: 'badge-arbitration',
+      PRE_COMPLIANCE: 'badge-pre-compliance', COMPLIANCE: 'badge-compliance',
+      REVERSAL: 'badge-reversal',
+      GOOD_FAITH: 'badge-goodfaith', GOODFAITH: 'badge-goodfaith',
+    };
+    return `<span class="badge ${map[stage] || ''}">${stage || '-'}</span>`;
+  }
+
+  function fmtDate(val) {
+    if (!val) return '-';
+    return new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function fmtAmount(amount, currency) {
+    if (amount == null) return '-';
+    const code = currency || 'USD';
+    try {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: code }).format(amount);
+    } catch {
+      return `${code} ${Number(amount).toFixed(2)}`;
+    }
+  }
+
+  async function loadDisputes(page) {
+    currentPage = page;
+    document.getElementById('tableContainer').innerHTML = '<div class="state-loading">Loading disputes...</div>';
+    document.getElementById('pagination').style.display = 'none';
+
+    const params = new URLSearchParams({ page, pageSize: 10 });
+    const status = document.getElementById('filterStatus').value;
+    const stage = document.getElementById('filterStage').value;
+    const start = document.getElementById('filterStartDate').value;
+    const end = document.getElementById('filterEndDate').value;
+    if (status) params.append('status', status);
+    if (stage) params.append('stage', stage);
+    if (start) params.append('startDate', start);
+    if (end) params.append('endDate', end);
+
+    try {
+      const res = await fetch(`${BACKEND}/disputes?${params}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Failed to load disputes');
+
+      const disputes = data.disputes || [];
+      disputes.forEach(d => { disputeCache[d.caseId] = d; });
+      totalPages = data.totalPages || 1;
+      document.getElementById('totalCount').textContent = `${data.totalCount || 0} dispute${(data.totalCount || 0) !== 1 ? 's' : ''}`;
+
+      if (disputes.length === 0) {
+        document.getElementById('tableContainer').innerHTML = '<div class="state-empty">No disputes found for the selected filters.</div>';
+        return;
+      }
+
+      const rows = disputes.map(d => `
+        <tr>
+          <td><code style="font-size:12px">${d.caseId || '-'}</code></td>
+          <td>${statusBadge(d.caseStatus)}</td>
+          <td>${stageBadge(d.caseStage)}</td>
+          <td>${fmtAmount(d.caseAmount, d.caseCurrency)}</td>
+          <td>${d.transactionCardType || '-'}</td>
+          <td><code style="font-size:12px">${d.transactionMaskedCardNumber || '-'}</code></td>
+          <td>${fmtDate(d.respondByDate)}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="openDetail('${d.caseId}')">View</button>
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('tableContainer').innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Case ID</th><th>Status</th><th>Stage</th><th>Amount</th>
+              <th>Card Type</th><th>Card (masked)</th><th>Respond By</th><th></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      document.getElementById('pagination').style.display = 'flex';
+      document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById('btnPrev').disabled = currentPage <= 1;
+      document.getElementById('btnNext').disabled = currentPage >= totalPages;
+
+    } catch (err) {
+      document.getElementById('tableContainer').innerHTML = `<div class="state-error">${err.message}</div>`;
+    }
+  }
+
+  function changePage(delta) {
+    const next = currentPage + delta;
+    if (next >= 1 && next <= totalPages) loadDisputes(next);
+  }
+
+  async function openDetail(disputeId) {
+    currentDisputeId = disputeId;
+    document.getElementById('modalTitle').textContent = `Dispute: ${disputeId}`;
+    document.getElementById('modalBody').innerHTML = '<div class="state-loading">Loading...</div>';
+    document.getElementById('modalFooter').innerHTML = '';
+    document.getElementById('detailModal').classList.add('open');
+
+    try {
+      const res = await fetch(`${BACKEND}/disputes/${disputeId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Failed to load dispute');
+      // Merge: list cache provides card fields the detail API omits; detail wins for non-null values
+      const cached = disputeCache[disputeId] || {};
+      const d = { ...cached };
+      Object.keys(data.dispute).forEach(key => {
+        if (data.dispute[key] !== null && data.dispute[key] !== undefined) d[key] = data.dispute[key];
+      });
+      document.getElementById('modalBody').innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-item"><label>Case ID</label><span>${d.caseId || '-'}</span></div>
+          <div class="detail-item"><label>Status</label><span>${statusBadge(d.caseStatus)}</span></div>
+          <div class="detail-item"><label>Stage</label><span>${stageBadge(d.caseStage)}</span></div>
+          <div class="detail-item"><label>Amount</label><span>${fmtAmount(d.caseAmount, d.caseCurrency)}</span></div>
+          <div class="detail-item"><label>Card Type</label><span>${d.transactionCardType || '-'}</span></div>
+          <div class="detail-item"><label>Masked Card</label><span><code>${d.transactionMaskedCardNumber || '-'}</code></span></div>
+          <div class="detail-item"><label>ARN</label><span><code style="font-size:12px">${d.transactionARN || '-'}</code></span></div>
+          <div class="detail-item"><label>Respond By</label><span>${fmtDate(d.respondByDate)}</span></div>
+          <div class="detail-item"><label>Deposit Date</label><span>${fmtDate(d.depositDate)}</span></div>
+          <div class="detail-item"><label>Case Opened</label><span>${fmtDate(d.caseIdTime)}</span></div>
+        </div>
+
+        <div class="challenge-form" id="challengeForm">
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:16px;">Upload Evidence</h4>
+          <div class="form-group">
+            <label>Document Type</label>
+            <select id="docType">
+              <option value="SALES_RECEIPT">Sales Receipt</option>
+              <option value="TERMS_AND_CONDITIONS">Terms and Conditions</option>
+              <option value="PROOF_OF_DELIVERY">Proof of Delivery</option>
+              <option value="PROOF_OF_SERVICE">Proof of Service</option>
+              <option value="CUSTOMER_COMMUNICATION">Customer Communication</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>File (PNG, JPG, PDF)</label>
+            <input type="file" id="docFile" accept=".png,.jpg,.jpeg,.pdf" />
+          </div>
+        </div>
+      `;
+
+      const canAct = d.caseStatus === 'UNDER_REVIEW';
+      document.getElementById('modalFooter').innerHTML = canAct ? `
+        <button class="btn btn-secondary btn-sm" onclick="toggleChallenge()">Challenge</button>
+        <button class="btn btn-danger btn-sm" onclick="submitChallenge()">Submit Challenge</button>
+        <button class="btn btn-warning btn-sm" onclick="confirmAccept()">Accept Dispute</button>
+      ` : `<span style="font-size:13px;color:#6b7280;">This dispute is closed.</span>`;
+
+    } catch (err) {
+      document.getElementById('modalBody').innerHTML = `<div class="state-error">${err.message}</div>`;
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('detailModal').classList.remove('open');
+    currentDisputeId = null;
+  }
+
+  function toggleChallenge() {
+    document.getElementById('challengeForm').classList.toggle('open');
+  }
+
+  async function confirmAccept() {
+    if (!confirm(`Accept dispute ${currentDisputeId}?\n\nThis acknowledges the dispute in the customer's favor and cannot be undone.`)) return;
+    try {
+      const res = await fetch(`${BACKEND}/disputes/${currentDisputeId}/accept`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Accept failed');
+      showToast('Dispute accepted successfully', 'success');
+      closeModal();
+      loadDisputes(currentPage);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function submitChallenge() {
+    const form = document.getElementById('challengeForm');
+    if (!form.classList.contains('open')) { toggleChallenge(); return; }
+
+    const file = document.getElementById('docFile').files[0];
+    const docType = document.getElementById('docType').value;
+    if (!file) { showToast('Please select a file to upload', 'error'); return; }
+
+    const b64 = await fileToBase64(file);
+    try {
+      const res = await fetch(`${BACKEND}/disputes/${currentDisputeId}/challenge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documents: [{ type: docType, b64Content: b64 }] })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Challenge failed');
+      showToast('Challenge submitted successfully', 'success');
+      closeModal();
+      loadDisputes(currentPage);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function showToast(message, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast show ${type}`;
+    setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
+  // Init
+  defaultDates();
+  loadDisputes(1);
+</script>
+</body>
+</html>
