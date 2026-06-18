@@ -1,0 +1,15 @@
+{
+  "name": "dispute-management",
+  "version": "1.0.0",
+  "description": "Dispute management sample using the Global Payments GP-API Node.js SDK",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "globalpayments-api": "^3.10.6"
+  }
+}

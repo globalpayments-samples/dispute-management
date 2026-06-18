@@ -1,0 +1,36 @@
+# Environment files — never commit credentials
+.env
+*.env.local
+*.env.*.local
+
+# PHP
+php/vendor/
+php/composer.lock
+
+# Node.js
+nodejs/node_modules/
+nodejs/package-lock.json
+nodejs/yarn.lock
+
+# .NET
+dotnet/bin/
+dotnet/obj/
+dotnet/*.user
+dotnet/.vs/
+
+# Java
+java/target/
+java/*.class
+
+# IDE
+.vscode/settings.json
+.idea/
+*.iml
+*.suo
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

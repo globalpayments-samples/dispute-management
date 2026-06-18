@@ -1,0 +1,14 @@
+{
+  "setupTasks": [
+    { "name": "Build", "command": "mvn clean package -DskipTests -q" },
+    { "name": "Create .env", "command": "cp .env.sample .env" }
+  ],
+  "tasks": {
+    "start": {
+      "name": "start",
+      "command": "mvn clean package cargo:run",
+      "runAtStart": true,
+      "preview": { "port": 8000 }
+    }
+  }
+}
