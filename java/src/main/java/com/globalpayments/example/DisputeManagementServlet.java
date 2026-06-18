@@ -47,12 +47,27 @@ public class DisputeManagementServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         try {
-            Dotenv dotenv = Dotenv.load();
             GpApiConfig config = new GpApiConfig();
-            config.setAppId(dotenv.get("GP_APP_ID"));
-            config.setAppKey(dotenv.get("GP_APP_KEY"));
+            String appId = System.getenv("GP_APP_ID");
+            String appKey = System.getenv("GP_APP_KEY");
+            String env = System.getenv("GP_ENVIRONMENT");
+            
+            // Try to load from .env file if env vars aren't set
+            if (appId == null || appKey == null) {
+                try {
+                    Dotenv dotenv = Dotenv.load();
+                    if (appId == null) appId = dotenv.get("GP_APP_ID");
+                    if (appKey == null) appKey = dotenv.get("GP_APP_KEY");
+                    if (env == null) env = dotenv.get("GP_ENVIRONMENT");
+                } catch (Exception e) {
+                    // Ignore .env load errors if env vars are provided
+                }
+            }
+            
+            if (env == null) env = "sandbox";
+            config.setAppId(appId);
+            config.setAppKey(appKey);
             config.setChannel(Channel.CardNotPresent);
-            String env = dotenv.get("GP_ENVIRONMENT", "sandbox");
             config.setEnvironment("production".equalsIgnoreCase(env) ? Environment.PRODUCTION : Environment.TEST);
             isSandbox = !"production".equalsIgnoreCase(env);
             ServicesContainer.configureService(config);

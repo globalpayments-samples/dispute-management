@@ -3,8 +3,8 @@ FROM php:8.3-cli
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends unzip libcurl4-openssl-dev && \
-    docker-php-ext-install curl && \
+    apt-get install -y --no-install-recommends unzip libcurl4-openssl-dev libicu-dev && \
+    docker-php-ext-install curl intl && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
