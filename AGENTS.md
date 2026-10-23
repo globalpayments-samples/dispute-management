@@ -23,7 +23,7 @@
 
 ## Repository Structure
 
-### PHP (built-in server, PHP 8.1+)
+### PHP (built-in server, PHP 8.2.35+, 8.3.36+, 8.4.27+, or 8.5.12+)
 - [`php/router.php`](php/router.php) — request dispatcher; routes to `php/api/` handlers
 - [`php/api/config.php`](php/api/config.php) — `GET /config`
 - [`php/api/list-disputes.php`](php/api/list-disputes.php) — `GET /disputes`
