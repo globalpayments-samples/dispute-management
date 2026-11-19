@@ -35,7 +35,7 @@
 ### Node.js (Express, Node 18+)
 - [`nodejs/server.js`](nodejs/server.js) — all routes in a single Express app
 
-### .NET (ASP.NET Core Minimal API, .NET 9)
+### .NET (ASP.NET Core Minimal API, .NET 10)
 - [`dotnet/Program.cs`](dotnet/Program.cs) — all routes via `app.MapGet` / `app.MapPost`
 
 ### Java (Servlet + embedded Tomcat, Java 21)
