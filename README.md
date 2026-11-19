@@ -210,6 +210,6 @@ The Case ID does not exist in your sandbox account. Use one of the sandbox IDs i
 - [GP-API Developer Docs](https://developer.globalpayments.com)
 - [API Reference](https://developer.globalpayments.com/api/references-overview)
 - [PHP SDK](https://github.com/globalpayments/php-sdk)
-- [Node.js SDK](https://github.com/globalpayments/node-js-sdk)
+- [Node.js SDK](https://github.com/globalpayments/node-sdk)
 - [.NET SDK](https://github.com/globalpayments/dotnet-sdk)
 - [Java SDK](https://github.com/globalpayments/java-sdk)
