@@ -2,13 +2,19 @@
 
 declare(strict_types=1);
 
+// Router for the PHP built-in server: serve the page, its assets and the
+// API routes below, and nothing else (no .env, composer files or vendor/).
+$path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/');
+
 // Serve index.html for the root path
-if ($_SERVER['REQUEST_URI'] === '/' || $_SERVER['REQUEST_URI'] === '/index.html') {
+if ($path === '/' || $path === '/index.html') {
     return false;
 }
 
-// Route static files normally
-if (is_file(__DIR__ . $_SERVER['REQUEST_URI'])) {
+// Serve the page's static assets
+$isAsset = preg_match('#^/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_.-]+\.(?:html|css|js|png|jpe?g|gif|svg|ico|webp|woff2?)$#', $path);
+$isHidden = preg_match('#(^|/)(\.|vendor/|node_modules/)#', $path);
+if ($isAsset && !$isHidden && is_file(__DIR__ . $path)) {
     return false;
 }
 
