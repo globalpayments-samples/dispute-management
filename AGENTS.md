@@ -32,10 +32,10 @@
 - [`php/api/challenge-dispute.php`](php/api/challenge-dispute.php) — `POST /disputes/{id}/challenge`
 - [`php/sdk-config.php`](php/sdk-config.php) — `GpApiConfig` bootstrap shared across handlers
 
-### Node.js (Express, Node 18+)
+### Node.js (Express, Node 24+)
 - [`nodejs/server.js`](nodejs/server.js) — all routes in a single Express app
 
-### .NET (ASP.NET Core Minimal API, .NET 9)
+### .NET (ASP.NET Core Minimal API, .NET 10)
 - [`dotnet/Program.cs`](dotnet/Program.cs) — all routes via `app.MapGet` / `app.MapPost`
 
 ### Java (Servlet + embedded Tomcat, Java 21)

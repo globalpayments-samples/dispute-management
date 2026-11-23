@@ -11,6 +11,9 @@
 
 import express from 'express';
 import * as dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 import {
   ServicesContainer,
   GpApiConfig,
@@ -36,7 +39,12 @@ function normalizeCurrency(code) { return (code && CURRENCY_MAP[code]) || code |
 const app = express();
 const port = process.env.PORT || 8000;
 
-app.use(express.static('.'));
+// Serve only the frontend page, never the server's own files
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const indexHtml = readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+app.get(['/', '/index.html'], (req, res) => {
+  res.type('html').send(indexHtml);
+});
 app.use(express.json());
 
 app.use((req, res, next) => {
