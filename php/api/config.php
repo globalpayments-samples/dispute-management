@@ -7,7 +7,7 @@ require_once __DIR__ . '/../sdk-config.php';
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
+$dotenv->safeLoad();
 
 echo json_encode([
     'environment' => $_ENV['GP_ENVIRONMENT'] ?? 'sandbox',

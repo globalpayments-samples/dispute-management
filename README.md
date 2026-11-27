@@ -169,7 +169,7 @@ To act on live disputes, set `GP_ENVIRONMENT=production` with production credent
 ## Run with Docker
 
 ```bash
-cp .env.sample .env  # add credentials
+cp php/.env.sample .env  # add credentials
 docker compose up php
 ```
 
