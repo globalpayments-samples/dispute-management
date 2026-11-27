@@ -17,14 +17,21 @@ function configureGpApi(): void
     $dotenv->safeLoad();
 
     $config = new GpApiConfig();
-    $config->appId = $_ENV['GP_APP_ID'];
-    $config->appKey = $_ENV['GP_APP_KEY'];
+    $config->appId = envValue('GP_APP_ID');
+    $config->appKey = envValue('GP_APP_KEY');
     $config->channel = Channel::CardNotPresent;
-    $config->environment = (strtolower($_ENV['GP_ENVIRONMENT'] ?? 'sandbox') === 'production')
+    $config->environment = (strtolower(envValue('GP_ENVIRONMENT') ?? 'sandbox') === 'production')
         ? Environment::PRODUCTION
         : Environment::TEST;
 
     ServicesContainer::configureService($config);
+}
+
+// $_ENV stays empty when php.ini leaves E out of variables_order, so fall back to getenv()
+function envValue(string $name): ?string
+{
+    $value = $_ENV[$name] ?? getenv($name);
+    return ($value === false || $value === '') ? null : $value;
 }
 
 function normalizeCurrency(?string $code): ?string
