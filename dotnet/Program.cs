@@ -25,10 +25,6 @@ app.UseStaticFiles();
 
 ConfigureSdk();
 
-var isSandbox = !(System.Environment.GetEnvironmentVariable("GP_ENVIRONMENT") ?? "sandbox")
-    .Equals("production", StringComparison.OrdinalIgnoreCase);
-const string sandboxNote = "Write operations are simulated in sandbox and not submitted to the card network. This action would execute against a live dispute in production.";
-
 var port = System.Environment.GetEnvironmentVariable("PORT") ?? "8000";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
@@ -109,7 +105,6 @@ app.MapGet("/disputes/{id}", (string id) =>
 // POST /disputes/{id}/accept
 app.MapPost("/disputes/{id}/accept", (string id) =>
 {
-    if (isSandbox) return Results.Json(new { success = true, responseCode = "SUCCESS", sandbox = true, note = sandboxNote });
     try
     {
         var dispute = new DisputeSummary { CaseId = id };
@@ -125,7 +120,6 @@ app.MapPost("/disputes/{id}/accept", (string id) =>
 // POST /disputes/{id}/challenge
 app.MapPost("/disputes/{id}/challenge", async (string id, HttpRequest req) =>
 {
-    if (isSandbox) return Results.Json(new { success = true, responseCode = "SUCCESS", sandbox = true, note = sandboxNote });
     try
     {
         var body = await JsonSerializer.DeserializeAsync<ChallengeRequest>(req.Body,

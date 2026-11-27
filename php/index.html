@@ -228,7 +228,7 @@
 </header>
 
 <div id="sandboxBanner" style="display:none; background:#fef3c7; border-bottom:1px solid #f59e0b; padding:10px 32px; font-size:13px; color:#92400e; align-items:center; gap:8px;">
-  <strong>Sandbox Mode</strong> — Write operations (Accept, Challenge) are simulated and not submitted to the card network.
+  <strong>Sandbox Mode:</strong> Accept and Challenge go to the GP API sandbox, not to the card network.
 </div>
 
 <div class="container">
@@ -513,7 +513,7 @@
       const res = await fetch(`${BACKEND}/disputes/${currentDisputeId}/accept`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error?.message || 'Accept failed');
-      showToast(data.sandbox ? data.note : 'Dispute accepted successfully', data.sandbox ? 'warning' : 'success');
+      showToast('Dispute accepted successfully', 'success');
       closeModal();
       loadDisputes(currentPage);
     } catch (err) {
@@ -538,7 +538,7 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error?.message || 'Challenge failed');
-      showToast(data.sandbox ? data.note : 'Challenge submitted successfully', data.sandbox ? 'warning' : 'success');
+      showToast('Challenge submitted successfully', 'success');
       closeModal();
       loadDisputes(currentPage);
     } catch (err) {

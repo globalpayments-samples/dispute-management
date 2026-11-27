@@ -95,14 +95,9 @@ Get credentials at [developer.globalpayments.com](https://developer.globalpaymen
 
 `POST /disputes/DIS_SAND_abcd1234/accept`
 
-Production response:
+Response:
 ```json
 { "success": true, "responseCode": "SUCCESS" }
-```
-
-Sandbox response:
-```json
-{ "success": true, "responseCode": "SUCCESS", "sandbox": true, "note": "Write operations are simulated in sandbox..." }
 ```
 
 ### Challenge a Dispute
@@ -131,8 +126,10 @@ GP-API sandbox pre-seeds the following dispute records for testing:
 
 | Case ID | Stage | Use for |
 |---------|-------|---------|
-| `DIS_SAND_abcd1234` | CHARGEBACK | Accept or single-document challenge |
-| `DIS_SAND_abcd1241` | CHARGEBACK | Multi-document challenge |
+| `DIS_SAND_abcd1234` | RETRIEVAL | Accept or single-document challenge |
+| `DIS_SAND_abcd1241` | GOOD_FAITH | Multi-document challenge |
+
+Accept and challenge only work on disputes with status `WITH_MERCHANT` (`DIS_SAND_abcd1234` to `DIS_SAND_abcd1241`). The sandbox answers `SYSTEM_ERROR_DOWNSTREAM` for `UNDER_REVIEW` and `CLOSED` disputes. The sandbox does not keep state, so the same case can be accepted or challenged again.
 
 > **Note**: The sandbox `findDisputesPaged` endpoint requires a `startDate` filter. The UI defaults to the last 90 days. If no disputes appear, widen the date range.
 
@@ -149,22 +146,16 @@ Browser → GET /disputes/{id}
 
 Browser → POST /disputes/{id}/accept
        ← Backend constructs DisputeSummary with caseId, calls .accept().execute()
-       ← (sandbox: returns mock SUCCESS without calling GP-API)
 
 Browser → POST /disputes/{id}/challenge  (with base64 document)
        ← Backend builds DisputeDocument[], constructs DisputeSummary, calls .challenge(docs).execute()
-       ← (sandbox: returns mock SUCCESS without calling GP-API)
 ```
 
 ## Sandbox Mode
 
-Accept and challenge requests are **simulated** when `GP_ENVIRONMENT=sandbox` — they do not reach the card network. The response includes `"sandbox": true` and a note explaining production behavior. The UI shows a yellow banner when running in sandbox mode.
+With `GP_ENVIRONMENT=sandbox`, accept and challenge go to the GP API sandbox and never reach the card network. The UI shows a yellow banner when running in sandbox mode.
 
-```json
-{ "success": true, "responseCode": "SUCCESS", "sandbox": true, "note": "Write operations are simulated in sandbox and not submitted to the card network." }
-```
-
-To test real dispute actions against live disputes, set `GP_ENVIRONMENT=production` with production credentials.
+To act on live disputes, set `GP_ENVIRONMENT=production` with production credentials.
 
 ## Available Language Backends
 
@@ -197,7 +188,7 @@ Services run on: PHP `:8003`, Node.js `:8001`, .NET `:8006`, Java `:8004`.
 The `findDisputesPaged` API requires a start date. Widen the date range filter. The UI defaults to 90 days but your sandbox may have older records.
 
 **`INVALID_DISPUTE_ACTION` error on Accept**
-The dispute may already be accepted or its status does not allow acceptance. Only `UNDER_REVIEW` disputes can be accepted or challenged.
+The dispute may already be accepted or its status does not allow acceptance. Only `WITH_MERCHANT` disputes can be accepted or challenged; the sandbox returns `SYSTEM_ERROR_DOWNSTREAM` for the others.
 
 **`MANDATORY_DATA_MISSING` on Challenge**
 A document with no `b64Content` was submitted. Ensure a file is selected before submitting.
