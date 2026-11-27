@@ -484,12 +484,13 @@
         </div>
       `;
 
-      const canAct = d.caseStatus === 'UNDER_REVIEW';
+      // GP only takes an accept or a challenge while the dispute is waiting on the merchant
+      const canAct = d.caseStatus === 'WITH_MERCHANT';
       document.getElementById('modalFooter').innerHTML = canAct ? `
         <button class="btn btn-secondary btn-sm" onclick="toggleChallenge()">Challenge</button>
         <button class="btn btn-danger btn-sm" onclick="submitChallenge()">Submit Challenge</button>
         <button class="btn btn-warning btn-sm" onclick="confirmAccept()">Accept Dispute</button>
-      ` : `<span style="font-size:13px;color:#6b7280;">This dispute is closed.</span>`;
+      ` : `<span style="font-size:13px;color:#6b7280;">${d.caseStatus === 'UNDER_REVIEW' ? 'This dispute is under review.' : 'This dispute is closed.'}</span>`;
 
     } catch (err) {
       document.getElementById('modalBody').innerHTML = `<div class="state-error">${err.message}</div>`;
