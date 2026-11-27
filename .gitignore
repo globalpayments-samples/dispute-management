@@ -9,7 +9,6 @@ php/composer.lock
 
 # Node.js
 nodejs/node_modules/
-nodejs/package-lock.json
 nodejs/yarn.lock
 
 # .NET
