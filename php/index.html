@@ -305,6 +305,7 @@
 
 <script>
   const BACKEND = '';
+  const PAGE_SIZE = 10;
   let currentPage = 1;
   let totalPages = 1;
   let currentDisputeId = null;
@@ -367,7 +368,7 @@
     document.getElementById('tableContainer').innerHTML = '<div class="state-loading">Loading disputes...</div>';
     document.getElementById('pagination').style.display = 'none';
 
-    const params = new URLSearchParams({ page, pageSize: 10 });
+    const params = new URLSearchParams({ page, pageSize: PAGE_SIZE });
     const status = document.getElementById('filterStatus').value;
     const stage = document.getElementById('filterStage').value;
     const start = document.getElementById('filterStartDate').value;
@@ -384,11 +385,20 @@
 
       const disputes = data.disputes || [];
       disputes.forEach(d => { disputeCache[d.caseId] = d; });
-      totalPages = data.totalPages || 1;
-      document.getElementById('totalCount').textContent = `${data.totalCount || 0} dispute${(data.totalCount || 0) !== 1 ? 's' : ''}`;
+      // The GP API disputes list has no total count, so a full page means there may be another one
+      const pageFull = disputes.length >= PAGE_SIZE;
+      totalPages = Math.max(data.totalPages || 1, pageFull ? currentPage + 1 : currentPage);
+      const shown = (currentPage - 1) * PAGE_SIZE + disputes.length;
+      document.getElementById('totalCount').textContent = `${shown}${pageFull ? '+' : ''} dispute${shown !== 1 ? 's' : ''}`;
 
       if (disputes.length === 0) {
         document.getElementById('tableContainer').innerHTML = '<div class="state-empty">No disputes found for the selected filters.</div>';
+        if (currentPage > 1) {
+          document.getElementById('pagination').style.display = 'flex';
+          document.getElementById('pageInfo').textContent = `Page ${currentPage}`;
+          document.getElementById('btnPrev').disabled = false;
+          document.getElementById('btnNext').disabled = true;
+        }
         return;
       }
 
@@ -420,7 +430,7 @@
       `;
 
       document.getElementById('pagination').style.display = 'flex';
-      document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById('pageInfo').textContent = pageFull ? `Page ${currentPage}` : `Page ${currentPage} of ${totalPages}`;
       document.getElementById('btnPrev').disabled = currentPage <= 1;
       document.getElementById('btnNext').disabled = currentPage >= totalPages;
 
