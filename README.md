@@ -178,7 +178,7 @@ To test real dispute actions against live disputes, set `GP_ENVIRONMENT=producti
 ## Run with Docker
 
 ```bash
-cp .env.sample .env  # add credentials
+cp php/.env.sample .env  # add credentials
 docker compose up php
 ```
 
