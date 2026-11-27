@@ -4,6 +4,8 @@ import com.global.api.ServicesContainer;
 import com.global.api.entities.DisputeDocument;
 import com.global.api.entities.Transaction;
 import com.global.api.entities.enums.Channel;
+import com.global.api.entities.enums.DisputeStage;
+import com.global.api.entities.enums.DisputeStatus;
 import com.global.api.entities.enums.Environment;
 import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.enums.DisputeSortProperty;
@@ -158,8 +160,9 @@ public class DisputeManagementServlet extends HttpServlet {
             if (endStr != null) {
                 query = query.and(DataServiceCriteria.EndStageDate, new SimpleDateFormat("yyyy-MM-dd").parse(endStr));
             }
-            if (status != null && !status.isEmpty()) query = query.and(SearchCriteria.DisputeStatus, status);
-            if (stage  != null && !stage.isEmpty())  query = query.and(SearchCriteria.DisputeStage, stage);
+            // The SDK filters take its enums, so match the GP API value the page sends (UNDER_REVIEW, GOOD_FAITH...)
+            if (status != null && !status.isEmpty()) query = query.and(SearchCriteria.DisputeStatus, gpEnum(DisputeStatus.class, status));
+            if (stage  != null && !stage.isEmpty())  query = query.and(SearchCriteria.DisputeStage, gpEnum(DisputeStage.class, stage));
 
             DisputeSummaryPaged result = query.execute();
 
@@ -239,6 +242,14 @@ public class DisputeManagementServlet extends HttpServlet {
         } catch (ApiException e) {
             out.print(errorJson(e));
         }
+    }
+
+    private static <T extends Enum<T>> T gpEnum(Class<T> type, String value) {
+        String wanted = value.replace("_", "");
+        for (T constant : type.getEnumConstants()) {
+            if (constant.name().equalsIgnoreCase(wanted)) return constant;
+        }
+        throw new IllegalArgumentException("Unknown " + type.getSimpleName() + ": " + value);
     }
 
     private JsonObject formatDispute(DisputeSummary d) {
