@@ -54,17 +54,29 @@ app.MapGet("/disputes", (HttpRequest req) =>
             .Where(DataServiceCriteria.StartStageDate, start);
 
         if (endStr != null)  query = query.And(DataServiceCriteria.EndStageDate, DateTime.Parse(endStr));
-        if (status != null)  query = query.And(SearchCriteria.DisputeStatus, status);
-        if (stage != null)   query = query.And(SearchCriteria.DisputeStage, stage);
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (!TryParseGpEnum<DisputeStatus>(status, out var statusValue))
+                return Results.Json(new { error = new { code = "400", message = $"Unknown status: {status}" } }, statusCode: 400);
+            query = query.And(SearchCriteria.DisputeStatus, statusValue);
+        }
+        if (!string.IsNullOrEmpty(stage))
+        {
+            if (!TryParseGpEnum<DisputeStage>(stage, out var stageValue))
+                return Results.Json(new { error = new { code = "400", message = $"Unknown stage: {stage}" } }, statusCode: 400);
+            query = query.And(SearchCriteria.DisputeStage, stageValue);
+        }
 
         var result = query.Execute();
 
         var disputes = result.Results?.Select(FormatDispute).ToList() ?? [];
+        // The disputes list has no total_record_count, so fall back to the page size like the other SDKs
+        var totalCount = result.TotalRecordCount > 0 ? result.TotalRecordCount : disputes.Count;
         return Results.Json(new
         {
             disputes,
-            totalCount  = result.TotalRecordCount,
-            totalPages  = (int)Math.Ceiling((double)result.TotalRecordCount / pageSize),
+            totalCount,
+            totalPages  = Math.Max(1, (int)Math.Ceiling((double)totalCount / pageSize)),
             currentPage = page
         });
     }
@@ -155,6 +167,22 @@ static string? NormalizeCurrency(string? code)
         {"CN","CNY"}, {"SE","SEK"}, {"NO","NOK"}, {"DK","DKK"}, {"CH","CHF"}, {"AE","AED"},
     };
     return map.TryGetValue(code, out var v) ? v : code;
+}
+
+// The SDK filters take its enums, so match the GP API value the page sends (UNDER_REVIEW, GOOD_FAITH...)
+static bool TryParseGpEnum<T>(string value, out T result) where T : struct, Enum
+{
+    var wanted = value.Replace("_", "");
+    foreach (var name in Enum.GetNames<T>())
+    {
+        if (string.Equals(name, wanted, StringComparison.OrdinalIgnoreCase))
+        {
+            result = Enum.Parse<T>(name);
+            return true;
+        }
+    }
+    result = default;
+    return false;
 }
 
 static object FormatDispute(DisputeSummary d) => new
