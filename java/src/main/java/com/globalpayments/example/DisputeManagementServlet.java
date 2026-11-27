@@ -7,7 +7,6 @@ import com.global.api.entities.enums.Channel;
 import com.global.api.entities.enums.Environment;
 import com.global.api.entities.enums.SortDirection;
 import com.global.api.entities.enums.DisputeSortProperty;
-import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.entities.reporting.DataServiceCriteria;
 import com.global.api.entities.reporting.DisputeSummary;
@@ -94,14 +93,14 @@ public class DisputeManagementServlet extends HttpServlet {
             }
 
             if ("/disputes".equals(path)) {
-                handleListDisputes(req, out);
+                handleListDisputes(req, res, out);
                 return;
             }
 
             // /disputes/{id}
             if (path.matches("/disputes/[^/]+")) {
                 String id = path.substring("/disputes/".length());
-                handleDisputeDetail(id, out);
+                handleDisputeDetail(id, res, out);
                 return;
             }
 
@@ -120,7 +119,7 @@ public class DisputeManagementServlet extends HttpServlet {
             // /disputes/{id}/accept
             if (path.matches("/disputes/[^/]+/accept")) {
                 String id = extractId(path);
-                handleAccept(id, out);
+                handleAccept(id, res, out);
                 return;
             }
 
@@ -128,7 +127,7 @@ public class DisputeManagementServlet extends HttpServlet {
             if (path.matches("/disputes/[^/]+/challenge")) {
                 String id = extractId(path);
                 String body = req.getReader().lines().collect(Collectors.joining());
-                handleChallenge(id, body, out);
+                handleChallenge(id, body, res, out);
                 return;
             }
 
@@ -137,7 +136,7 @@ public class DisputeManagementServlet extends HttpServlet {
         }
     }
 
-    private void handleListDisputes(HttpServletRequest req, PrintWriter out) throws IOException {
+    private void handleListDisputes(HttpServletRequest req, HttpServletResponse res, PrintWriter out) throws IOException {
         try {
             int page     = Math.max(1, intParam(req, "page", 1));
             int pageSize = Math.min(50, Math.max(1, intParam(req, "pageSize", 10)));
@@ -175,11 +174,12 @@ public class DisputeManagementServlet extends HttpServlet {
             response.addProperty("currentPage", page);
             out.print(gson.toJson(response));
         } catch (Exception e) {
+            res.setStatus(500);
             out.print(errorJson(e));
         }
     }
 
-    private void handleDisputeDetail(String id, PrintWriter out) {
+    private void handleDisputeDetail(String id, HttpServletResponse res, PrintWriter out) {
         try {
             DisputeSummary d = ReportingService.disputeDetail(id).execute();
             JsonObject wrap = new JsonObject();
@@ -187,12 +187,13 @@ public class DisputeManagementServlet extends HttpServlet {
             detail.addProperty("merchantHierarchy", d.getMerchantHierarchy());
             wrap.add("dispute", detail);
             out.print(gson.toJson(wrap));
-        } catch (ApiException e) {
+        } catch (Exception e) {
+            res.setStatus(500);
             out.print(errorJson(e));
         }
     }
 
-    private void handleAccept(String id, PrintWriter out) {
+    private void handleAccept(String id, HttpServletResponse res, PrintWriter out) {
         try {
             DisputeSummary dispute = new DisputeSummary();
             dispute.setCaseId(id);
@@ -201,17 +202,19 @@ public class DisputeManagementServlet extends HttpServlet {
             json.addProperty("success", true);
             json.addProperty("responseCode", response.getResponseCode());
             out.print(gson.toJson(json));
-        } catch (ApiException e) {
+        } catch (Exception e) {
+            res.setStatus(500);
             out.print(errorJson(e));
         }
     }
 
-    private void handleChallenge(String id, String body, PrintWriter out) {
+    private void handleChallenge(String id, String body, HttpServletResponse res, PrintWriter out) {
         try {
             JsonObject parsed = JsonParser.parseString(body).getAsJsonObject();
             JsonArray rawDocs = parsed.getAsJsonArray("documents");
 
             if (rawDocs == null || rawDocs.size() == 0) {
+                res.setStatus(400);
                 out.print("{\"error\":{\"code\":\"400\",\"message\":\"At least one document is required\"}}");
                 return;
             }
@@ -233,7 +236,8 @@ public class DisputeManagementServlet extends HttpServlet {
             json.addProperty("success", true);
             json.addProperty("responseCode", response.getResponseCode());
             out.print(gson.toJson(json));
-        } catch (ApiException e) {
+        } catch (Exception e) {
+            res.setStatus(500);
             out.print(errorJson(e));
         }
     }
