@@ -16,7 +16,7 @@
 
 4. **Sandbox Case IDs for testing:** `DIS_SAND_abcd1234` (accept/single-doc challenge), `DIS_SAND_abcd1241` (multi-doc challenge). These are pre-seeded in every GP-API sandbox account.
 
-5. **Write operations are simulated in sandbox.** When `GP_ENVIRONMENT` is not `production`, the accept and challenge endpoints return a mock `{ success: true, responseCode: "SUCCESS", sandbox: true, note: "..." }` without calling the GP-API. This prevents `SYSTEM_ERROR_DOWNSTREAM` errors that occur in sandbox because card-network downstream services are not reachable. The `GET /config` endpoint returns the current environment so the frontend can show a sandbox mode banner.
+5. **Only `WITH_MERCHANT` disputes take an accept or a challenge.** The GP-API sandbox accepts both for the `WITH_MERCHANT` cases (`DIS_SAND_abcd1234` to `DIS_SAND_abcd1241`) and answers `SYSTEM_ERROR_DOWNSTREAM` for `UNDER_REVIEW` and `CLOSED` ones, so the frontend only shows the buttons for `WITH_MERCHANT`. Accept and challenge call the GP-API in every environment. The `GET /config` endpoint returns the current environment so the frontend can show a sandbox mode banner.
 
 6. **Dispute stage values from the API.** The GP-API can return these stage strings — not all are in the SDK enum constants by that exact name:
    `RETRIEVAL`, `CHARGEBACK`, `SECOND_CHARGEBACK`, `PRE_ARBITRATION`, `ARBITRATION`, `PRE_COMPLIANCE`, `COMPLIANCE`, `REVERSAL`, `GOOD_FAITH` (SDK enum uses `GOODFAITH` without underscore, but the API returns `GOOD_FAITH`). The frontend `stageBadge()` handles both spellings.

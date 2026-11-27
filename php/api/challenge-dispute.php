@@ -10,16 +10,6 @@ use GlobalPayments\Api\Entities\Reporting\DisputeSummary;
 try {
     configureGpApi();
 
-    if (strtolower($_ENV['GP_ENVIRONMENT'] ?? 'sandbox') !== 'production') {
-        echo json_encode([
-            'success'      => true,
-            'responseCode' => 'SUCCESS',
-            'sandbox'      => true,
-            'note'         => 'Write operations are simulated in sandbox and not submitted to the card network. This action would execute against a live dispute in production.',
-        ]);
-        exit;
-    }
-
     $body = json_decode(file_get_contents('php://input'), true);
     $rawDocs = $body['documents'] ?? [];
 

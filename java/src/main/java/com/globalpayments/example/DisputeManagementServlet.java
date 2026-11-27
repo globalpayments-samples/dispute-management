@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 @WebServlet(urlPatterns = {"/config", "/disputes", "/disputes/*"})
 public class DisputeManagementServlet extends HttpServlet {
 
-    private static final String SANDBOX_NOTE = "Write operations are simulated in sandbox and not submitted to the card network. This action would execute against a live dispute in production.";
     private final Gson gson = new Gson();
     private boolean isSandbox;
 
@@ -194,7 +193,6 @@ public class DisputeManagementServlet extends HttpServlet {
     }
 
     private void handleAccept(String id, PrintWriter out) {
-        if (isSandbox) { out.print(sandboxMockJson()); return; }
         try {
             DisputeSummary dispute = new DisputeSummary();
             dispute.setCaseId(id);
@@ -209,7 +207,6 @@ public class DisputeManagementServlet extends HttpServlet {
     }
 
     private void handleChallenge(String id, String body, PrintWriter out) {
-        if (isSandbox) { out.print(sandboxMockJson()); return; }
         try {
             JsonObject parsed = JsonParser.parseString(body).getAsJsonObject();
             JsonArray rawDocs = parsed.getAsJsonArray("documents");
@@ -277,15 +274,6 @@ public class DisputeManagementServlet extends HttpServlet {
         err.addProperty("message", e.getMessage() != null ? e.getMessage() : "Unknown error");
         wrapper.add("error", err);
         return gson.toJson(wrapper);
-    }
-
-    private String sandboxMockJson() {
-        JsonObject json = new JsonObject();
-        json.addProperty("success", true);
-        json.addProperty("responseCode", "SUCCESS");
-        json.addProperty("sandbox", true);
-        json.addProperty("note", SANDBOX_NOTE);
-        return gson.toJson(json);
     }
 
     private void setCors(HttpServletResponse res) {

@@ -138,13 +138,9 @@ app.get('/disputes/:id', async (req, res) => {
   }
 });
 
-const SANDBOX_NOTE = 'Write operations are simulated in sandbox and not submitted to the card network. This action would execute against a live dispute in production.';
-const isSandbox = () => (process.env.GP_ENVIRONMENT || 'sandbox').toLowerCase() !== 'production';
-
 // POST /disputes/:id/accept
 app.post('/disputes/:id/accept', async (req, res) => {
   try {
-    if (isSandbox()) return res.json({ success: true, responseCode: 'SUCCESS', sandbox: true, note: SANDBOX_NOTE });
     const dispute = new DisputeSummary();
     dispute.caseId = req.params.id;
     const response = await dispute.accept().execute();
@@ -158,7 +154,6 @@ app.post('/disputes/:id/accept', async (req, res) => {
 // POST /disputes/:id/challenge
 app.post('/disputes/:id/challenge', async (req, res) => {
   try {
-    if (isSandbox()) return res.json({ success: true, responseCode: 'SUCCESS', sandbox: true, note: SANDBOX_NOTE });
     const rawDocs = req.body.documents || [];
     if (!rawDocs.length) {
       return res.status(400).json({ error: { code: '400', message: 'At least one document is required' } });
